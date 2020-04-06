@@ -1,5 +1,5 @@
 # Developer : Hamdy Abou El Anein
-from multiprocessing import Process, Pipe
+from multiprocessing import Process, Pipe, Queue
 
 import random
 import pygame
@@ -144,10 +144,10 @@ def keydown(event, Pipe_Data):
 
     if event.key == K_UP:
         paddle2_vel = -8
-        Pipe_Data.send(event.key)
+        Pipe_Data[0] = event.key
     elif event.key == K_DOWN:
         paddle2_vel = 8
-        Pipe_Data.send(event.key)
+        Pipe_Data[0] = event.key
     elif event.key == K_z:
         paddle1_vel = -8
     elif event.key == K_s:
@@ -160,7 +160,7 @@ def keyup(event,Pipe_Data):
         paddle1_vel = 0
     elif event.key in (K_UP, K_DOWN):
         paddle2_vel = 0
-        Pipe_Data.send(0)
+        Pipe_Data[0] = 0
 
 def PongGameMain(Pipe_Data):
 
