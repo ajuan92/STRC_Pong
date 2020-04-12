@@ -1,13 +1,13 @@
 # Developer : Hamdy Abou El Anein
 from multiprocessing import Process, Pipe, Queue
 
+import PongConst as PConst
 import random
 import pygame
 import sys
 from pygame import *
 from easygui import *
 from queue import Queue
-
 
 
 WHITE = (255, 255, 255)
@@ -42,8 +42,10 @@ def ball_init(right):
 
     ball_vel = [horz, -vert]
 
+
 def init():
-    global paddle1_pos, paddle2_pos, paddle1_vel, paddle2_vel, l_score, r_score  # these are floats
+    # these are floats
+    global paddle1_pos, paddle2_pos, paddle1_vel, paddle2_vel, l_score, r_score
     global score1, score2  # these are ints
     paddle1_pos = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
     paddle2_pos = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT // 2]
@@ -53,6 +55,7 @@ def init():
         ball_init(True)
     else:
         ball_init(False)
+
 
 def draw(canvas):
     global paddle1_pos, paddle2_pos, ball_pos, ball_vel, l_score, r_score
@@ -139,28 +142,44 @@ def draw(canvas):
     label2 = myfont2.render("Score " + str(r_score), 1, (255, 255, 0))
     canvas.blit(label2, (470, 20))
 
+
 def keydown(event, Pipe_Data):
     global paddle1_vel, paddle2_vel
 
     if event.key == K_UP:
         paddle2_vel = -8
-        Pipe_Data[0] = event.key
+        Pipe_Data[PConst.PALETA1_TYPE] = event.type
+        Pipe_Data[PConst.PALETA1_KEY] = event.key
     elif event.key == K_DOWN:
         paddle2_vel = 8
-        Pipe_Data[0] = event.key
-    elif event.key == K_z:
-        paddle1_vel = -8
-    elif event.key == K_s:
-        paddle1_vel = 8
+        Pipe_Data[PConst.PALETA1_TYPE] = event.type
+        Pipe_Data[PConst.PALETA1_KEY] = event.key
 
-def keyup(event,Pipe_Data):
+
+def keyup(event, Pipe_Data):
     global paddle1_vel, paddle2_vel
 
-    if event.key in (K_z, K_s):
-        paddle1_vel = 0
-    elif event.key in (K_UP, K_DOWN):
+    if event.key in (K_UP, K_DOWN):
         paddle2_vel = 0
-        Pipe_Data[0] = 0
+        Pipe_Data[PConst.PALETA1_TYPE] = event.type
+        Pipe_Data[PConst.PALETA1_KEY] = event.key
+
+
+def Remotkeydown(Pipe_Data):
+    global paddle1_vel, paddle2_vel
+
+    if Pipe_Data[PConst.PALETA2_KEY] == K_UP:
+        paddle1_vel = -8
+    elif Pipe_Data[PConst.PALETA2_KEY] == K_DOWN:
+        paddle1_vel = 8
+
+
+def Remotkeyup(Pipe_Data):
+    global paddle1_vel, paddle2_vel
+
+    if Pipe_Data[PConst.PALETA2_KEY] in (K_UP, K_DOWN):
+        paddle1_vel = 0
+
 
 def PongGameMain(Pipe_Data):
 
@@ -176,12 +195,16 @@ def PongGameMain(Pipe_Data):
     window = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
     pygame.display.set_caption("Daylight Pong")
 
-
     init()
 
     while True:
 
         draw(window)
+
+        if Pipe_Data[PConst.PALETA2_TYPE] == KEYDOWN:
+            Remotkeydown(Pipe_Data)
+        elif Pipe_Data[PConst.PALETA2_TYPE] == KEYUP:
+            Remotkeyup(Pipe_Data)
 
         for event in pygame.event.get():
 
@@ -195,6 +218,7 @@ def PongGameMain(Pipe_Data):
                 sys.exit()
         pygame.display.update()
         fps.tick(60)
+
 
 if __name__ == "__main__":
     PongGameMain()
