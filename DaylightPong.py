@@ -5,6 +5,7 @@ import PongConst as PConst
 import random
 import pygame
 import sys
+import time as tm
 from pygame import *
 from easygui import *
 from queue import Queue
@@ -147,47 +148,75 @@ def keydown(event, Pipe_Data):
     global paddle1_vel, paddle2_vel
 
     if event.key == K_UP:
-        paddle2_vel = -8
-        Pipe_Data[PConst.PALETA1_TYPE] = event.type
-        Pipe_Data[PConst.PALETA1_KEY] = event.key
+        if PConst.ID_CURRENT_PLAYER == PConst.PLAYER_1_ID:
+            paddle1_vel = -8
+            Pipe_Data[PConst.PALETA1_TYPE] = event.type
+            Pipe_Data[PConst.PALETA1_KEY] = event.key
+        else:
+            paddle2_vel = -8
+            Pipe_Data[PConst.PALETA2_TYPE] = event.type
+            Pipe_Data[PConst.PALETA2_KEY] = event.key
     elif event.key == K_DOWN:
-        paddle2_vel = 8
-        Pipe_Data[PConst.PALETA1_TYPE] = event.type
-        Pipe_Data[PConst.PALETA1_KEY] = event.key
+        if PConst.ID_CURRENT_PLAYER == PConst.PLAYER_1_ID:
+            paddle1_vel = 8
+            Pipe_Data[PConst.PALETA1_TYPE] = event.type
+            Pipe_Data[PConst.PALETA1_KEY] = event.key
+        else:
+            paddle2_vel = 8
+            Pipe_Data[PConst.PALETA2_TYPE] = event.type
+            Pipe_Data[PConst.PALETA2_KEY] = event.key
 
 
 def keyup(event, Pipe_Data):
     global paddle1_vel, paddle2_vel
 
     if event.key in (K_UP, K_DOWN):
-        paddle2_vel = 0
-        Pipe_Data[PConst.PALETA1_TYPE] = event.type
-        Pipe_Data[PConst.PALETA1_KEY] = event.key
+        if PConst.ID_CURRENT_PLAYER == PConst.PLAYER_1_ID:
+            paddle1_vel = 0
+            Pipe_Data[PConst.PALETA1_TYPE] = event.type
+            Pipe_Data[PConst.PALETA1_KEY] = event.key
+        else:
+            paddle2_vel = 0
+            Pipe_Data[PConst.PALETA2_TYPE] = event.type
+            Pipe_Data[PConst.PALETA2_KEY] = event.key
 
 
 def Remotkeydown(Pipe_Data):
     global paddle1_vel, paddle2_vel
 
-    if Pipe_Data[PConst.PALETA2_KEY] == K_UP:
-        paddle1_vel = -8
-    elif Pipe_Data[PConst.PALETA2_KEY] == K_DOWN:
-        paddle1_vel = 8
+    if PConst.ID_OTHE_PLAYER == PConst.PLAYER_2_ID:
+        if Pipe_Data[PConst.PALETA2_KEY] == K_UP:
+            paddle2_vel = -8
+        elif Pipe_Data[PConst.PALETA2_KEY] == K_DOWN:
+            paddle2_vel = 8
+    else:
+        if Pipe_Data[PConst.PALETA1_KEY] == K_UP:
+            paddle1_vel = -8
+        elif Pipe_Data[PConst.PALETA1_KEY] == K_DOWN:
+            paddle1_vel = 8
 
 
 def Remotkeyup(Pipe_Data):
     global paddle1_vel, paddle2_vel
 
-    if Pipe_Data[PConst.PALETA2_KEY] in (K_UP, K_DOWN):
-        paddle1_vel = 0
+    if PConst.ID_OTHE_PLAYER == PConst.PLAYER_2_ID:
+        if Pipe_Data[PConst.PALETA2_KEY] in (K_UP, K_DOWN):
+            paddle2_vel = 0
+    else:
+        if Pipe_Data[PConst.PALETA1_KEY] in (K_UP, K_DOWN):
+            paddle1_vel = 0
 
 
 def PongGameMain(Pipe_Data):
 
     print("Waiting Other Player")
-    print("Start")
+    print("Start_Game")
+    Count = 0
 
-    for count in range(5):
-        print("Waiting Other Player" + str(count))
+    while Pipe_Data[PConst.ESTADO_CONECCION] != 1 or Count >= 50000:
+        #print("Waiting Other Player")
+        tm.sleep(0.010)
+        Count = Count + 1
 
     pygame.init()
     fps = pygame.time.Clock()
@@ -201,10 +230,16 @@ def PongGameMain(Pipe_Data):
 
         draw(window)
 
-        if Pipe_Data[PConst.PALETA2_TYPE] == KEYDOWN:
-            Remotkeydown(Pipe_Data)
-        elif Pipe_Data[PConst.PALETA2_TYPE] == KEYUP:
-            Remotkeyup(Pipe_Data)
+        if PConst.ID_OTHE_PLAYER == PConst.PLAYER_2_ID:
+            if Pipe_Data[PConst.PALETA2_TYPE] == KEYDOWN:
+                Remotkeydown(Pipe_Data)
+            elif Pipe_Data[PConst.PALETA2_TYPE] == KEYUP:
+                Remotkeyup(Pipe_Data)
+        else:
+            if Pipe_Data[PConst.PALETA1_TYPE] == KEYDOWN:
+                Remotkeydown(Pipe_Data)
+            elif Pipe_Data[PConst.PALETA1_TYPE] == KEYUP:
+                Remotkeyup(Pipe_Data)
 
         for event in pygame.event.get():
 

@@ -1,4 +1,7 @@
-import socketserver
+import sys
+from Apppath import APPPATH
+sys.path.insert(1, APPPATH)
+
 import socket
 import Addr_Dir
 import PongConst as PConst
@@ -32,12 +35,14 @@ def ServerNet(ProcesData):
         # Receive the data in small chunks and retransmit it
         while True:
             data = connection.recv(Addr_Dir.BUFFER_SIZE)
+            #print(data)
             RevCommand = Convert(data.decode('utf-8'))
-            ProcesData[0] = 0  # int(RevCommand[0])
+            ProcesData[0] = int(RevCommand[0])
             ProcesData[1] = int(RevCommand[1])
             ProcesData[2] = int(RevCommand[2])
+            ProcesData[3] = int(RevCommand[3])
             if data:
-                connection.sendall(data)
+                connection.sendall(str.encode(RevCommand[0]))
             else:
                 #print('no data from', client_address)
                 break

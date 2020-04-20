@@ -1,3 +1,6 @@
+from Apppath import APPPATH
+sys.path.insert(1, APPPATH)
+
 import socket
 import Addr_Dir
 import PongConst as PConst
