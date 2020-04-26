@@ -1,7 +1,12 @@
 # Developer : Hamdy Abou El Anein
 from multiprocessing import Process, Pipe, Queue
 
+import sys
+from Apppath import APPPATH
+sys.path.insert(1, APPPATH)
+
 import PongConst as PConst
+import Addr_Dir
 import random
 import pygame
 import sys
@@ -83,8 +88,9 @@ def draw(canvas):
     elif paddle2_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle2_vel < 0:
         paddle2_pos[1] += paddle2_vel
 
-    ball_pos[0] += int(ball_vel[0])
-    ball_pos[1] += int(ball_vel[1])
+    if Addr_Dir.ID_OTHE_PLAYER == Addr_Dir.PLAYER_2_ID:
+        ball_pos[0] += int(ball_vel[0])
+        ball_pos[1] += int(ball_vel[1])
 
     pygame.draw.circle(canvas, ORANGE, ball_pos, 20, 0)
     pygame.draw.polygon(
@@ -110,30 +116,31 @@ def draw(canvas):
         0,
     )
 
-    if int(ball_pos[1]) <= BALL_RADIUS:
-        ball_vel[1] = -ball_vel[1]
-    if int(ball_pos[1]) >= HEIGHT + 1 - BALL_RADIUS:
-        ball_vel[1] = -ball_vel[1]
+    if Addr_Dir.ID_OTHE_PLAYER == Addr_Dir.PLAYER_2_ID:
+        if int(ball_pos[1]) <= BALL_RADIUS:
+            ball_vel[1] = -ball_vel[1]
+        if int(ball_pos[1]) >= HEIGHT + 1 - BALL_RADIUS:
+            ball_vel[1] = -ball_vel[1]
 
-    if int(ball_pos[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball_pos[1]) in range(
-        paddle1_pos[1] - HALF_PAD_HEIGHT, paddle1_pos[1] + HALF_PAD_HEIGHT, 1
-    ):
-        ball_vel[0] = -ball_vel[0]
-        ball_vel[0] *= 1.1
-        ball_vel[1] *= 1.1
-    elif int(ball_pos[0]) <= BALL_RADIUS + PAD_WIDTH:
-        r_score += 1
-        ball_init(True)
+        if int(ball_pos[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball_pos[1]) in range(
+            paddle1_pos[1] - HALF_PAD_HEIGHT, paddle1_pos[1] + HALF_PAD_HEIGHT, 1
+        ):
+            ball_vel[0] = -ball_vel[0]
+            ball_vel[0] *= 1.1
+            ball_vel[1] *= 1.1
+        elif int(ball_pos[0]) <= BALL_RADIUS + PAD_WIDTH:
+            r_score += 1
+            ball_init(True)
 
-    if int(ball_pos[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(
-        ball_pos[1]
-    ) in range(paddle2_pos[1] - HALF_PAD_HEIGHT, paddle2_pos[1] + HALF_PAD_HEIGHT, 1):
-        ball_vel[0] = -ball_vel[0]
-        ball_vel[0] *= 1.1
-        ball_vel[1] *= 1.1
-    elif int(ball_pos[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH:
-        l_score += 1
-        ball_init(False)
+        if int(ball_pos[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(
+            ball_pos[1]
+        ) in range(paddle2_pos[1] - HALF_PAD_HEIGHT, paddle2_pos[1] + HALF_PAD_HEIGHT, 1):
+            ball_vel[0] = -ball_vel[0]
+            ball_vel[0] *= 1.1
+            ball_vel[1] *= 1.1
+        elif int(ball_pos[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH:
+            l_score += 1
+            ball_init(False)
 
     myfont1 = pygame.font.SysFont("Comic Sans MS", 20)
     label1 = myfont1.render("Score " + str(l_score), 1, (255, 255, 0))
@@ -148,7 +155,7 @@ def keydown(event, Pipe_Data):
     global paddle1_vel, paddle2_vel
 
     if event.key == K_UP:
-        if PConst.ID_CURRENT_PLAYER == PConst.PLAYER_1_ID:
+        if Addr_Dir.ID_CURRENT_PLAYER == Addr_Dir.PLAYER_1_ID:
             paddle1_vel = -8
             Pipe_Data[PConst.PALETA1_TYPE] = event.type
             Pipe_Data[PConst.PALETA1_KEY] = event.key
@@ -157,7 +164,7 @@ def keydown(event, Pipe_Data):
             Pipe_Data[PConst.PALETA2_TYPE] = event.type
             Pipe_Data[PConst.PALETA2_KEY] = event.key
     elif event.key == K_DOWN:
-        if PConst.ID_CURRENT_PLAYER == PConst.PLAYER_1_ID:
+        if Addr_Dir.ID_CURRENT_PLAYER == Addr_Dir.PLAYER_1_ID:
             paddle1_vel = 8
             Pipe_Data[PConst.PALETA1_TYPE] = event.type
             Pipe_Data[PConst.PALETA1_KEY] = event.key
@@ -171,7 +178,7 @@ def keyup(event, Pipe_Data):
     global paddle1_vel, paddle2_vel
 
     if event.key in (K_UP, K_DOWN):
-        if PConst.ID_CURRENT_PLAYER == PConst.PLAYER_1_ID:
+        if Addr_Dir.ID_CURRENT_PLAYER == Addr_Dir.PLAYER_1_ID:
             paddle1_vel = 0
             Pipe_Data[PConst.PALETA1_TYPE] = event.type
             Pipe_Data[PConst.PALETA1_KEY] = event.key
@@ -184,7 +191,7 @@ def keyup(event, Pipe_Data):
 def Remotkeydown(Pipe_Data):
     global paddle1_vel, paddle2_vel
 
-    if PConst.ID_OTHE_PLAYER == PConst.PLAYER_2_ID:
+    if Addr_Dir.ID_OTHE_PLAYER == Addr_Dir.PLAYER_2_ID:
         if Pipe_Data[PConst.PALETA2_KEY] == K_UP:
             paddle2_vel = -8
         elif Pipe_Data[PConst.PALETA2_KEY] == K_DOWN:
@@ -199,12 +206,30 @@ def Remotkeydown(Pipe_Data):
 def Remotkeyup(Pipe_Data):
     global paddle1_vel, paddle2_vel
 
-    if PConst.ID_OTHE_PLAYER == PConst.PLAYER_2_ID:
+    if Addr_Dir.ID_OTHE_PLAYER == Addr_Dir.PLAYER_2_ID:
         if Pipe_Data[PConst.PALETA2_KEY] in (K_UP, K_DOWN):
             paddle2_vel = 0
     else:
         if Pipe_Data[PConst.PALETA1_KEY] in (K_UP, K_DOWN):
             paddle1_vel = 0
+
+
+def ActRemoteBall(Pipe_Data):
+    global ball_pos, ball_vel, l_score, r_score
+    if Addr_Dir.ID_OTHE_PLAYER == Addr_Dir.PLAYER_2_ID:
+        Pipe_Data[PConst.BALL_P_X] = int(ball_pos[0])
+        Pipe_Data[PConst.BALL_P_Y] = int(ball_pos[1])
+        Pipe_Data[PConst.BALL_V_X] = int(ball_vel[0])
+        Pipe_Data[PConst.BALL_V_Y] = int(ball_vel[1])
+        Pipe_Data[PConst.SCORE_PLAYER_1] = l_score
+        Pipe_Data[PConst.SCORE_PLAYER_2] = r_score
+    else:
+        ball_pos[0] = Pipe_Data[PConst.BALL_P_X]
+        ball_pos[1] = Pipe_Data[PConst.BALL_P_Y]
+        ball_vel[0] = Pipe_Data[PConst.BALL_V_X]
+        ball_vel[1] = Pipe_Data[PConst.BALL_V_Y]
+        l_score = Pipe_Data[PConst.SCORE_PLAYER_1]
+        r_score = Pipe_Data[PConst.SCORE_PLAYER_2]
 
 
 def PongGameMain(Pipe_Data):
@@ -228,9 +253,11 @@ def PongGameMain(Pipe_Data):
 
     while True:
 
+        ActRemoteBall(Pipe_Data)
+
         draw(window)
 
-        if PConst.ID_OTHE_PLAYER == PConst.PLAYER_2_ID:
+        if Addr_Dir.ID_OTHE_PLAYER == Addr_Dir.PLAYER_2_ID:
             if Pipe_Data[PConst.PALETA2_TYPE] == KEYDOWN:
                 Remotkeydown(Pipe_Data)
             elif Pipe_Data[PConst.PALETA2_TYPE] == KEYUP:
