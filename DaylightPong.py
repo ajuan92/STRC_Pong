@@ -251,8 +251,8 @@ def PongGameMain(Pipe_Data):
 
     init()
 
-    while True:
-
+    while Pipe_Data[PConst.GLOBAL_ERR_ST] == 0:
+        #print(Pipe_Data[PConst.GLOBAL_ERR_ST])
         ActRemoteBall(Pipe_Data)
 
         draw(window)

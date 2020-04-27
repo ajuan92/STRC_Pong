@@ -31,7 +31,7 @@ def ServerNet(ProcesData):
     while True:
         # Wait for a connection
         connection, client_address = sock.accept()
-
+        TimeReade = 0
         # Receive the data in small chunks and retransmit it
         while True:
             data = connection.recv(Addr_Dir.BUFFER_SIZE)
@@ -46,7 +46,12 @@ def ServerNet(ProcesData):
             ProcesData[6] = int(RevCommand[6])
             ProcesData[7] = int(RevCommand[7])
             ProcesData[8] = int(RevCommand[8])
-            ProcesData[9] = int(RevCommand[9])
+            TimeReade = int(RevCommand[9]) % 2**64
+            ProcesData[9] = int(TimeReade)
+            #print(int(RevCommand[9]))
+            #print(" ")
+            #print(TimeReade)
+            #print(ProcesData[9])
 
             if data:
                 connection.sendall(str.encode(RevCommand[0]))
